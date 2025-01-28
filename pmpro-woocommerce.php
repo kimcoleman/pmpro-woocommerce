@@ -987,20 +987,15 @@ add_filter( 'woocommerce_order_status_processing', 'pmprowoo_order_autocomplete'
 function pmprowoo_get_memberships_from_cart() {
 	global $woocommerce, $pmprowoo_product_levels;
 
-	$membership_product_ids = array_keys( $pmprowoo_product_levels );
-	$cart_items  = $woocommerce->cart->cart_contents;
-	$membership_product_ids_in_cart = array();
-	
-	// Nothing in the cart, just bail.
-	if ( empty( $cart_items ) ) {
-		return $membership_product_ids_in_cart;
+	// Ensure WooCommerce cart is initialized and not empty.
+	if ( empty( $woocommerce->cart ) || ! is_object( $woocommerce->cart ) || empty( $woocommerce->cart->cart_contents ) ) {
+		return array();
 	}
 
+	$membership_product_ids = array_keys( $pmprowoo_product_levels );
+
 	// Get all product IDs in the cart
-	$product_ids = array();
-	foreach( $cart_items as $item ) {
-		$product_ids[] = $item['product_id'];
-	}
+	$product_ids = wp_list_pluck( $woocommerce->cart->cart_contents, 'product_id' );
 
 	// Compare values between the two arrays of membership products and items in the cart.
 	$membership_product_ids_in_cart = array_values( array_intersect( $membership_product_ids, $product_ids ) );
